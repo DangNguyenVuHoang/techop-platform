@@ -4,10 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev -p 3001",
-    "build": "next build",
+    "dev": "npm --prefix ../.. run build --workspace=@techop/shared && next dev -p 3001",
+    "build": "npm --prefix ../.. run build --workspace=@techop/shared && next build",
     "start": "next start -p 3001",
-    "typecheck": "next typegen && tsc --noEmit",
+    "typecheck": "npm --prefix ../.. run build --workspace=@techop/shared && next typegen && tsc --noEmit",
     "test": "tsx --test \"src/**/*.test.ts\""
   },
   "dependencies": {
