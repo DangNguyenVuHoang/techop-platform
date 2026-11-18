@@ -15,13 +15,14 @@
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "pretest": "npm run build",
+    "pretest": "tsc -p tsconfig.test.json",
     "test": "node --test \"dist/**/*.test.js\""
   },
   "dependencies": {
     "zod": "^4.1.5"
   },
   "devDependencies": {
+    "@types/node": "^22.15.0",
     "typescript": "^5.9.3"
   }
 }
