@@ -1,6 +1,6 @@
 import cors from "cors";
 import express, { type Express } from "express";
-import helmet from "helmet";
+import * as helmetModule from "helmet";
 import type { AppConfig } from "./config/env.js";
 import type { DatabaseClient } from "./lib/db.js";
 import type { Logger } from "./lib/logger.js";
@@ -34,7 +34,7 @@ export function createApp({
 
   app.disable("x-powered-by");
   app.use(requestIdMiddleware);
-  app.use(helmet());
+  app.use(helmetModule.default());
 
   const allowedOrigins = new Set(config.corsAllowedOrigins);
   app.use(
