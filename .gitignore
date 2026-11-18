@@ -9,6 +9,8 @@ build/
 .next/
 out/
 *.tsbuildinfo
+next-env.d.ts
+apps/crm-admin/AGENTS.md
 
 # Environment variables (NEVER commit secrets)
 .env

@@ -169,4 +169,3 @@ export async function runMigrations(
     client.release();
   }
 }
-

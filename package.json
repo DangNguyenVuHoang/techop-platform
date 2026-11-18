@@ -13,6 +13,7 @@
   ],
   "scripts": {
     "dev:api": "npm run dev --workspace=@techop/core-api",
+    "dev:crm": "npm run dev --workspace=@techop/crm-admin",
     "build": "npm run build --workspace=@techop/shared && npm run build --workspaces --if-present",
     "typecheck": "npm run build --workspace=@techop/shared && npm run typecheck --workspaces --if-present && tsc -p infra/tsconfig.json",
     "lint": "eslint .",

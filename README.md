@@ -5,7 +5,7 @@ Monorepo Modular Monolith architecture powering TECHOP's centralized customer re
 ## Architecture Overview
 
 - `apps/core-api` — Central Modular Monolith backend (Express 5 + PostgreSQL 17, `api.gettechop.com`) _[Phase C.2 + C.3 Foundation]_
-- `apps/crm-admin` — Internal CRM & CMS Admin Portal (Next.js 16, `crm.gettechop.com`) _[Phase C.4]_
+- `apps/crm-admin` — Internal CRM & CMS Admin Portal (Next.js 16, `crm.gettechop.com`) _[Phase C.4 Foundation]_
 - `apps/marketing-web` — Public Marketing Website A (Next.js 16, `techop.vn`) _[Phase C.5]_
 - `packages/shared` — `@techop/shared` domain enums, normalizers, API envelope types, and Zod validation schemas
 - `infra/` — Docker Compose (PostgreSQL 17 on port `5434`), Versioned SQL Migrations & CLI _[Phase C.3 Foundation]_
@@ -93,3 +93,16 @@ npm run dev:api
 - CRM, Leads, Deduplication, Attribution & Integrations (`Phase 2`)
 - CMS & Cloudflare R2 Media (`Phase 3`)
 - Analytics & Notifications (`Phase 4`)
+
+## CRM Admin (`apps/crm-admin`)
+
+Internal CRM & CMS Admin Portal (Next.js 16 App Router, React 19, Tailwind CSS v4) running on port `3001`:
+
+```bash
+cp apps/crm-admin/.env.example apps/crm-admin/.env.local
+npm run dev:crm
+```
+
+- Local URL: `http://localhost:3001`
+- Routes (C.4 Foundation placeholders): `/`, `/dashboard`, `/leads`, `/activities`, `/attribution`, `/content`, `/media`, `/users`, `/settings`
+- See [apps/crm-admin/README.md](apps/crm-admin/README.md) for environment variables and Vercel readiness details.

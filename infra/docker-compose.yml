@@ -27,4 +27,3 @@ services:
 volumes:
   techop_platform_pgdata:
     name: techop_platform_pgdata
-
