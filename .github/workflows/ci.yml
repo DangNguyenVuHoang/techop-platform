@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Build, Lint, Typecheck & Test
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: techop_platform_dev
+          POSTGRES_USER: techop_app
+          POSTGRES_PASSWORD: techop_ci_test_password
+        ports:
+          - 5434:5432
+        options: >-
+          --health-cmd="pg_isready -U techop_app -d techop_platform_dev"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+
+    env:
+      DATABASE_URL: postgresql://techop_app:techop_ci_test_password@127.0.0.1:5434/techop_platform_dev
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Lint monorepo
+        run: npm run lint
+
+      - name: Typecheck monorepo
+        run: npm run typecheck
+
+      - name: Build workspaces
+        run: npm run build
+
+      - name: Run versioned SQL migrations
+        run: npm run db:migrate
+
+      - name: Verify migration status
+        run: npm run db:migrate:status
+
+      - name: Run all tests
+        run: npm test

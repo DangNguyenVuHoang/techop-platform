@@ -6,9 +6,10 @@ Monorepo Modular Monolith architecture powering TECHOP's centralized customer re
 
 - `apps/core-api` — Central Modular Monolith backend (Express 5 + PostgreSQL 17, `api.gettechop.com`) _[Phase C.2 + C.3 Foundation]_
 - `apps/crm-admin` — Internal CRM & CMS Admin Portal (Next.js 16, `crm.gettechop.com`) _[Phase C.4 Foundation]_
-- `apps/marketing-web` — Public Marketing Website A (Next.js 16, `techop.vn`) _[Phase C.5 Foundation]_
+- `apps/marketing-web` — Optional/Dormant Marketing Website Foundation (Next.js 16) _[Phase C.5 Foundation; existing `https://techop.vn` remains the live public site]_
 - `packages/shared` — `@techop/shared` domain enums, normalizers, API envelope types, and Zod validation schemas
 - `infra/` — Docker Compose (PostgreSQL 17 on port `5434`), Versioned SQL Migrations & CLI _[Phase C.3 Foundation]_
+- `.github/workflows/ci.yml` — Automated CI validation (`format:check`, `lint`, `typecheck`, `build`, `db:migrate`, `test`) _[Phase C.6 Foundation]_
 
 ## Prerequisites
 
