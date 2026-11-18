@@ -6,7 +6,7 @@ Monorepo Modular Monolith architecture powering TECHOP's centralized customer re
 
 - `apps/core-api` — Central Modular Monolith backend (Express 5 + PostgreSQL 17, `api.gettechop.com`) _[Phase C.2 + C.3 Foundation]_
 - `apps/crm-admin` — Internal CRM & CMS Admin Portal (Next.js 16, `crm.gettechop.com`) _[Phase C.4 Foundation]_
-- `apps/marketing-web` — Public Marketing Website A (Next.js 16, `techop.vn`) _[Phase C.5]_
+- `apps/marketing-web` — Public Marketing Website A (Next.js 16, `techop.vn`) _[Phase C.5 Foundation]_
 - `packages/shared` — `@techop/shared` domain enums, normalizers, API envelope types, and Zod validation schemas
 - `infra/` — Docker Compose (PostgreSQL 17 on port `5434`), Versioned SQL Migrations & CLI _[Phase C.3 Foundation]_
 
@@ -106,3 +106,16 @@ npm run dev:crm
 - Local URL: `http://localhost:3001`
 - Routes (C.4 Foundation placeholders): `/`, `/dashboard`, `/leads`, `/activities`, `/attribution`, `/content`, `/media`, `/users`, `/settings`
 - See [apps/crm-admin/README.md](apps/crm-admin/README.md) for environment variables and Vercel readiness details.
+
+## Marketing Web (`apps/marketing-web`)
+
+Public marketing website foundation (Next.js 16 App Router, React 19, Tailwind CSS v4) running on port `3002` (avoids colliding with legacy port `3000` and `crm-admin` port `3001`):
+
+```bash
+cp apps/marketing-web/.env.example apps/marketing-web/.env.local
+npm run dev:marketing
+```
+
+- Local URL: `http://localhost:3002`
+- Foundation routes: `/`, `/robots.txt`, `/sitemap.xml`
+- See [apps/marketing-web/README.md](apps/marketing-web/README.md) for environment variables and SEO foundation details.
