@@ -14,12 +14,15 @@
   "scripts": {
     "dev:api": "npm run dev --workspace=@techop/core-api",
     "build": "npm run build --workspace=@techop/shared && npm run build --workspaces --if-present",
-    "typecheck": "npm run build --workspace=@techop/shared && npm run typecheck --workspaces --if-present",
+    "typecheck": "npm run build --workspace=@techop/shared && npm run typecheck --workspaces --if-present && tsc -p infra/tsconfig.json",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "npm run build --workspace=@techop/shared && npm run test --workspaces --if-present"
+    "test": "npm run build --workspace=@techop/shared && npm run test --workspaces --if-present && npm run test:infra",
+    "test:infra": "tsx --test infra/scripts/*.test.ts",
+    "db:migrate": "tsx infra/scripts/migrate.ts",
+    "db:migrate:status": "tsx infra/scripts/migrate.ts status"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.0",

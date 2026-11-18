@@ -5,13 +5,23 @@ import { after, before, describe, it } from "node:test";
 import type { ApiErrorResponse, ApiSuccessResponse } from "@techop/shared";
 import { createApp } from "../app.js";
 import { parseEnv, type AppConfig } from "../config/env.js";
+import type { DatabaseClient } from "../lib/db.js";
 import { createLogger } from "../lib/logger.js";
-import type { SystemHealthPayload } from "../modules/system/index.js";
+import type { SystemHealthPayload, SystemReadyPayload } from "../modules/system/index.js";
 
-async function startTestServer(configOverrides: NodeJS.ProcessEnv = {}) {
+const TEST_DB_URL = "postgresql://techop_app:secret@127.0.0.1:5434/techop_platform_dev";
+
+async function startTestServer(
+  configOverrides: NodeJS.ProcessEnv = {},
+  db: DatabaseClient | null = {
+    checkReadiness: async () => true,
+    close: async () => {},
+  },
+) {
   const config: AppConfig = parseEnv({
     NODE_ENV: "test",
     LOG_LEVEL: "silent",
+    DATABASE_URL: TEST_DB_URL,
     CORS_ALLOWED_ORIGINS: "http://localhost:3001",
     ...configOverrides,
   });
@@ -19,6 +29,7 @@ async function startTestServer(configOverrides: NodeJS.ProcessEnv = {}) {
   const app = createApp({
     config,
     logger,
+    db,
     registerTestRoutes(expressApp) {
       expressApp.get("/api/v1/__test/boom", () => {
         throw new Error("Sensitive internal database failure detail");
@@ -56,7 +67,7 @@ describe("@techop/core-api HTTP foundation", () => {
     await closeServer();
   });
 
-  it("GET /api/v1/system/health returns standard envelope without sensitive info", async () => {
+  it("GET /api/v1/system/health returns liveness 200 without sensitive info", async () => {
     const res = await fetch(`${baseUrl}/api/v1/system/health`);
     assert.equal(res.status, 200);
     assert.ok(res.headers.get("x-request-id"));
@@ -70,6 +81,38 @@ describe("@techop/core-api HTTP foundation", () => {
     assert.ok(!Number.isNaN(Date.parse(body.data.timestamp)));
     assert.equal("database" in body.data, false);
     assert.equal("env" in body.data, false);
+  });
+
+  it("GET /api/v1/system/ready returns 200 when DB is ready and 503 when DB is down (without keeping liveness down)", async () => {
+    const readyRes = await fetch(`${baseUrl}/api/v1/system/ready`);
+    assert.equal(readyRes.status, 200);
+    const readyBody = (await readyRes.json()) as ApiSuccessResponse<SystemReadyPayload>;
+    assert.equal(readyBody.ok, true);
+    assert.equal(readyBody.data.status, "ready");
+    assert.equal(readyBody.data.checks.database, "up");
+
+    const downServer = await startTestServer(
+      {},
+      {
+        checkReadiness: async () => false,
+        close: async () => {},
+      },
+    );
+    try {
+      const livenessRes = await fetch(`${downServer.baseUrl}/api/v1/system/health`);
+      assert.equal(livenessRes.status, 200);
+
+      const unreadyRes = await fetch(`${downServer.baseUrl}/api/v1/system/ready`);
+      assert.equal(unreadyRes.status, 503);
+      const rawText = await unreadyRes.text();
+      const unreadyBody = JSON.parse(rawText) as ApiErrorResponse;
+      assert.equal(unreadyBody.ok, false);
+      assert.equal(unreadyBody.error.code, "SERVICE_UNAVAILABLE");
+      assert.equal(rawText.includes("5434"), false);
+      assert.equal(rawText.includes("postgresql://"), false);
+    } finally {
+      await downServer.close();
+    }
   });
 
   it("propagates safe X-Request-Id and replaces unsafe client values", async () => {

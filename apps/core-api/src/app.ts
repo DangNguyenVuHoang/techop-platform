@@ -2,6 +2,7 @@ import cors from "cors";
 import express, { type Express } from "express";
 import helmet from "helmet";
 import type { AppConfig } from "./config/env.js";
+import type { DatabaseClient } from "./lib/db.js";
 import type { Logger } from "./lib/logger.js";
 import { createErrorHandler } from "./middleware/error-handler.js";
 import { notFoundHandler } from "./middleware/not-found.js";
@@ -13,6 +14,7 @@ import { AppError } from "./utils/errors.js";
 export interface CreateAppOptions {
   config: AppConfig;
   logger: Logger;
+  db?: DatabaseClient | null;
   /**
    * Optional hook for registering test-only routes before 404/error middleware.
    */
@@ -22,7 +24,12 @@ export interface CreateAppOptions {
 /**
  * Build the Express 5 Core API application without binding a network port.
  */
-export function createApp({ config, logger, registerTestRoutes }: CreateAppOptions): Express {
+export function createApp({
+  config,
+  logger,
+  db = null,
+  registerTestRoutes,
+}: CreateAppOptions): Express {
   const app = express();
 
   app.disable("x-powered-by");
@@ -51,7 +58,7 @@ export function createApp({ config, logger, registerTestRoutes }: CreateAppOptio
   app.use(express.json({ limit: config.jsonBodyLimit }));
   app.use(createRequestLoggerMiddleware(logger));
 
-  app.use(createApiRouter(config));
+  app.use(createApiRouter(config, db));
 
   if (registerTestRoutes) {
     registerTestRoutes(app);

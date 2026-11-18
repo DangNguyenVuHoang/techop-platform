@@ -1,5 +1,6 @@
 import { createApp } from "./app.js";
 import { loadEnv } from "./config/env.js";
+import { createDatabase } from "./lib/db.js";
 import { createLogger } from "./lib/logger.js";
 
 const SHUTDOWN_TIMEOUT_MS = 10_000;
@@ -7,7 +8,8 @@ const SHUTDOWN_TIMEOUT_MS = 10_000;
 function startServer(): void {
   const config = loadEnv();
   const logger = createLogger(config);
-  const app = createApp({ config, logger });
+  const db = createDatabase(config, logger);
+  const app = createApp({ config, logger, db });
 
   const server = app.listen(config.port, () => {
     logger.info("core_api_started", {
@@ -23,7 +25,7 @@ function startServer(): void {
       message: err.message,
       port: config.port,
     });
-    process.exit(1);
+    void db.close().finally(() => process.exit(1));
   });
 
   let isShuttingDown = false;
@@ -40,13 +42,22 @@ function startServer(): void {
     forceTimer.unref();
 
     server.close((err) => {
-      clearTimeout(forceTimer);
-      if (err) {
-        logger.error("core_api_shutdown_error", { message: err.message });
-        process.exit(1);
-      }
-      logger.info("core_api_stopped");
-      process.exit(0);
+      void db
+        .close()
+        .catch((dbErr: unknown) => {
+          logger.error("core_api_db_close_error", {
+            message: dbErr instanceof Error ? dbErr.message : "Unknown error",
+          });
+        })
+        .finally(() => {
+          clearTimeout(forceTimer);
+          if (err) {
+            logger.error("core_api_shutdown_error", { message: err.message });
+            process.exit(1);
+          }
+          logger.info("core_api_stopped");
+          process.exit(0);
+        });
     });
   };
 

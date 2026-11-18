@@ -1,0 +1,30 @@
+# Local Development PostgreSQL 17 for techop-platform
+# Production deployment uses a separate compose file without exposing PostgreSQL ports.
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: techop-platform-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-techop_platform_dev}
+      POSTGRES_USER: ${POSTGRES_USER:-techop_app}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-techop_dev_password_change_me}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5434}:5432"
+    volumes:
+      - techop_platform_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-techop_app} -d ${POSTGRES_DB:-techop_platform_dev}",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+volumes:
+  techop_platform_pgdata:
+    name: techop_platform_pgdata
+

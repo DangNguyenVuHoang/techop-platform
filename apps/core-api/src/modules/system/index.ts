@@ -1,2 +1,2 @@
 export { createSystemRouter } from "./system.routes.js";
-export type { SystemHealthPayload } from "./system.controller.js";
+export type { SystemHealthPayload, SystemReadyPayload } from "./system.controller.js";

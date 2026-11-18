@@ -11,18 +11,23 @@ const LEVEL_PRIORITY: Record<LogLevel, number> = {
 };
 
 const SENSITIVE_KEY_PATTERN =
-  /^(password|token|access_?token|refresh_?token|secret|authorization|cookie|set-cookie|api_?key|x-source-key|email|phone)$/i;
+  /^(password|token|access_?token|refresh_?token|secret|authorization|cookie|set-cookie|api_?key|x-source-key|email|phone|database_?url|connectionString)$/i;
+
+const CONNECTION_STRING_PATTERN = /postgres(?:ql)?:\/\/[^\s"']+/gi;
 
 function sanitizeValue(value: unknown, depth = 0): unknown {
   if (depth > 4) return "[Truncated]";
   if (value === null || value === undefined) return value;
+  if (typeof value === "string") {
+    return value.replace(CONNECTION_STRING_PATTERN, "[REDACTED_CONNECTION_URL]");
+  }
   if (Array.isArray(value)) {
     return value.map((item) => sanitizeValue(item, depth + 1));
   }
   if (value instanceof Error) {
     return {
       name: value.name,
-      message: value.message,
+      message: value.message.replace(CONNECTION_STRING_PATTERN, "[REDACTED_CONNECTION_URL]"),
     };
   }
   if (typeof value === "object") {

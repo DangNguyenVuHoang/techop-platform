@@ -18,6 +18,24 @@ const envSchema = z
       .default("/api/v1"),
     LOG_LEVEL: z.enum(LOG_LEVELS).default("info"),
     SERVICE_NAME: z.string().trim().min(1).max(100).default("techop-core-api"),
+    DATABASE_URL: z
+      .string()
+      .trim()
+      .min(1, "DATABASE_URL is required")
+      .refine(
+        (val) => {
+          try {
+            const parsed = new URL(val);
+            return parsed.protocol === "postgres:" || parsed.protocol === "postgresql:";
+          } catch {
+            return false;
+          }
+        },
+        { message: "DATABASE_URL must be a valid postgres:// or postgresql:// URL" },
+      ),
+    DB_POOL_MAX: z.coerce.number().int().min(1).max(50).default(10),
+    DB_CONNECT_TIMEOUT_MS: z.coerce.number().int().min(500).max(30000).default(5000),
+    DB_IDLE_TIMEOUT_MS: z.coerce.number().int().min(1000).max(120000).default(30000),
     CORS_ALLOWED_ORIGINS: z.string().optional().default(""),
     JSON_BODY_LIMIT: z
       .string()
@@ -66,6 +84,10 @@ const envSchema = z
       apiPrefix: raw.API_PREFIX,
       logLevel: raw.LOG_LEVEL,
       serviceName: raw.SERVICE_NAME,
+      databaseUrl: raw.DATABASE_URL,
+      dbPoolMax: raw.DB_POOL_MAX,
+      dbConnectTimeoutMs: raw.DB_CONNECT_TIMEOUT_MS,
+      dbIdleTimeoutMs: raw.DB_IDLE_TIMEOUT_MS,
       corsAllowedOrigins: origins,
       jsonBodyLimit: raw.JSON_BODY_LIMIT,
       isProduction: raw.NODE_ENV === "production",
